@@ -244,6 +244,7 @@
       </div>
 
       <div class="section">
+        <div class="mini" id="selectionSummary" style="margin-bottom:8px">選択中：未選択</div>
         <div class="label">生成された「今日の配信どうだった？」</div>
         <textarea id="dailyMessage" rows="5" placeholder="ここに生成されます。直接修正OK！"></textarea>
         <div class="btnrow">
@@ -499,6 +500,7 @@ function historyGet(){
 function historySet(v){
   localStorage.setItem("shuriri_thanks_history",JSON.stringify(v.slice(0,20)));
   renderHistory();
+updateSelectionSummary();
 }
 function addHistory(text,meta={}){
   if(!text.trim())return;
@@ -514,7 +516,7 @@ function renderHistory(){
 function escapeHtml(s){return s.replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
 
 function selectedValues(container){
-  return [...container.querySelectorAll(".chip.active")].map(x=>x.dataset.value);
+  return [...container.querySelectorAll(".chip.active, .stream-card.active")].map(x=>x.dataset.value);
 }
 
 function recentTexts(){ return historyGet().map(x=>x.text).join("\n") }
@@ -817,6 +819,29 @@ function loadDraft(){
   }catch(e){return false}
 }
 
+
+function updateSelectionSummary(){
+  const primary = selectedValues(streamChips);
+  const extras = selectedValues(extraStreamChips);
+  const state = selectedValues(stateChips);
+  const merged = [...new Set([...primary, ...extras])];
+  let text = merged.length ? merged.join(" / ") : "未選択";
+  if(state.length) text += ` ｜ ${state[0]}`;
+  const box = document.getElementById("selectionSummary");
+  if(box) box.textContent = `選択中：${text}`;
+}
+
+[...streamChips.querySelectorAll(".stream-card")].forEach(b=>{
+  b.addEventListener("click", ()=>setTimeout(updateSelectionSummary, 0));
+});
+[...extraStreamChips.querySelectorAll(".chip")].forEach(b=>{
+  b.addEventListener("click", ()=>setTimeout(updateSelectionSummary, 0));
+});
+[...stateChips.querySelectorAll(".chip")].forEach(b=>{
+  b.addEventListener("click", ()=>setTimeout(updateSelectionSummary, 0));
+});
+topicToggle.addEventListener("click", ()=>setTimeout(updateSelectionSummary, 0));
+
 document.getElementById("generateLine").onclick=()=>{
   const t=buildGeneratedLine();
   dailyMessage.value=t;
@@ -858,6 +883,7 @@ document.getElementById("clearHistory").onclick=()=>{localStorage.removeItem("sh
 randomizeDesign();
 if(!loadDraft()) setPreview();
 renderHistory();
+updateSelectionSummary();
 </script>
 </body>
 </html>
