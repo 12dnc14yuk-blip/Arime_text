@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>しゅりり ありがとうメッセージメーカー</title>
+<style>
+  :root{
+    --bg:#fff8e8;
+    --card:#ffffff;
+    --ink:#2d2520;
+    --muted:#756a63;
+    --line:#f1d9ab;
+    --accent:#ff9f1c;
+    --accent2:#ff6f91;
+    --accent3:#ffd84d;
+    --green:#79c66e;
+    --blue:#60b7ff;
+    --shadow:0 10px 28px rgba(85,57,25,.12);
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic UI","Yu Gothic",Meiryo,sans-serif;
+    color:var(--ink);
+    background:
+      radial-gradient(circle at 20% 0%, #fff2b7 0 10%, transparent 10.5%),
+      radial-gradient(circle at 100% 8%, #ffdbe5 0 9%, transparent 9.5%),
+      linear-gradient(180deg,#fffaf0 0%,#fff4db 100%);
+    min-height:100vh;
+  }
+  .wrap{max-width:1180px;margin:0 auto;padding:18px}
+  .hero{
+    background:linear-gradient(135deg,#ffb84b,#ff7f50 55%,#ff6f91);
+    color:#fff;border-radius:24px;padding:18px 20px;box-shadow:var(--shadow);
+    border:3px solid rgba(255,255,255,.7);
+  }
+  .hero h1{margin:0;font-size:clamp(22px,5vw,34px);line-height:1.15}
+  .hero p{margin:7px 0 0;font-weight:700;opacity:.96;font-size:14px}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px}
+  .card{
+    background:rgba(255,255,255,.96);
+    border:2px solid #fff;
+    border-radius:22px;
+    box-shadow:var(--shadow);
+    padding:16px;
+  }
+  .card h2{font-size:17px;margin:0 0 12px;display:flex;align-items:center;gap:8px}
+  .mini{font-size:12px;color:var(--muted);font-weight:600;line-height:1.6}
+  .section{margin-top:14px}
+  .label{font-size:13px;font-weight:900;margin-bottom:8px}
+  .chips{display:flex;flex-wrap:wrap;gap:8px}
+  button,.chip{
+    font:inherit;
+  }
+  .chip{
+    border:1.5px solid #efcf95;background:#fff9ea;color:#4b3828;
+    border-radius:999px;padding:9px 12px;font-weight:800;cursor:pointer;
+    transition:.15s transform,.15s background,.15s border;
+    user-select:none;
+  }
+  .chip:hover{transform:translateY(-1px)}
+  .chip.active{background:#ffb84b;border-color:#f39a16;color:#3b2207;box-shadow:0 4px 0 #e88c0c}
+  .chip.state.active{background:#ffd5df;border-color:#ff86a2;color:#661d35;box-shadow:0 4px 0 #ef6f8e}
+  .chip.topic.active{background:#dff5ff;border-color:#72c8f5;color:#17435b;box-shadow:0 4px 0 #55abd9}
+  input,textarea,select{
+    width:100%;border:1.5px solid #e7d8c2;border-radius:13px;padding:11px 12px;
+    background:#fffdf9;color:var(--ink);font:inherit;outline:none;
+  }
+  input:focus,textarea:focus,select:focus{border-color:#ffad39;box-shadow:0 0 0 3px rgba(255,173,57,.18)}
+  textarea{resize:vertical;line-height:1.55}
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .btnrow{display:flex;flex-wrap:wrap;gap:9px;margin-top:10px}
+  .btn{
+    border:0;border-radius:14px;padding:11px 14px;font-weight:900;cursor:pointer;
+    background:#efefef;color:#302b27;box-shadow:0 4px 0 #d4d4d4;
+  }
+  .btn:active{transform:translateY(2px);box-shadow:0 2px 0 #d4d4d4}
+  .btn.primary{background:linear-gradient(135deg,#ffb53c,#ff7f50);color:white;box-shadow:0 4px 0 #df6d25}
+  .btn.pink{background:#ff7fa0;color:white;box-shadow:0 4px 0 #d65b7a}
+  .btn.green{background:#78c96d;color:white;box-shadow:0 4px 0 #55a14c}
+  .btn.blue{background:#69bdf7;color:white;box-shadow:0 4px 0 #4397d0}
+  .preview{
+    min-height:700px;
+    font-family:"SFMono-Regular",Consolas,"Liberation Mono",Menlo,monospace;
+    font-size:14px;
+    white-space:pre-wrap;
+  }
+  .status{
+    display:inline-flex;align-items:center;gap:6px;padding:6px 9px;border-radius:999px;
+    background:#fff3c6;font-size:12px;font-weight:800;color:#6b4b00;
+  }
+  .sticky{position:sticky;top:12px}
+  details{border:1.5px dashed #e6c984;border-radius:14px;padding:10px 12px;background:#fffaf0}
+  summary{font-weight:900;cursor:pointer}
+  .footer-note{font-size:11px;color:#7c6e64;margin-top:10px;line-height:1.5}
+  .history{max-height:180px;overflow:auto;border:1px solid #eadcc8;border-radius:12px;padding:8px;background:#fffdf9}
+  .history-item{font-size:12px;padding:7px 6px;border-bottom:1px dashed #eadcc8;line-height:1.5}
+  .history-item:last-child{border-bottom:0}
+  @media(max-width:850px){
+    .grid{grid-template-columns:1fr}
+    .sticky{position:static}
+    .preview{min-height:520px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="hero">
+    <h1>🐰 しゅりり ありがとうメッセージメーカー</h1>
+    <p>選ぶ → ひとこと生成 → 好きに修正 → 全文コピー。HP＋1を置いていくやつ💪🏻✨</p>
+  </header>
+
+  <div class="grid">
+    <main class="card">
+      <h2>① 今日の配信を選ぶ</h2>
+      <div class="mini">複数選択OK。同じ配信が続いても、直近の言い回しをなるべく避けて作ります。</div>
+
+      <div class="section">
+        <div class="label">配信タイプ</div>
+        <div class="chips" id="streamChips"></div>
+      </div>
+
+      <div class="section">
+        <div class="label">みんなの状態（必要な時だけ）</div>
+        <div class="chips" id="stateChips"></div>
+      </div>
+
+      <div class="section">
+        <div class="label">＋ 話題を入れる</div>
+        <div class="chips">
+          <button class="chip topic" id="topicToggle">〇〇の話が楽しかった！</button>
+        </div>
+        <div id="topicArea" style="display:none;margin-top:10px">
+          <div class="row">
+            <input id="topicText" placeholder="例：夢占い / ダンス / イヤホンの話" />
+            <select id="topicMood">
+              <option value="楽しかった">楽しかった！</option>
+              <option value="盛り上がった">盛り上がった！</option>
+              <option value="いっぱい話した">いっぱい話した！</option>
+              <option value="反応がおもしろかった">みんなの反応がおもしろかった！</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="label">今日あったこと（任意）</div>
+        <input id="eventText" placeholder="例：途中でマイク切れた / なぜかゴリラの話になった" />
+      </div>
+
+      <div class="section">
+        <div class="btnrow">
+          <button class="btn primary" id="generateLine">✨ しゅりっぽい一言を作る！</button>
+          <button class="btn pink" id="regenLine">🔄 別の言い方</button>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="label">生成された「今日の配信どうだった？」</div>
+        <textarea id="dailyMessage" rows="5" placeholder="ここに生成されます。直接修正OK！"></textarea>
+        <div class="btnrow">
+          <button class="btn green" id="applyLine">✓ 本文に反映</button>
+        </div>
+      </div>
+
+      <div class="section">
+        <details>
+          <summary>🎨 本文のランダム部分・修正</summary>
+          <div class="section row">
+            <div>
+              <div class="label">日付</div>
+              <input id="dateInput" />
+            </div>
+            <div>
+              <div class="label">一番上のフック</div>
+              <input id="hookInput" value="🎁 HP＋1置いときます！" />
+            </div>
+          </div>
+          <div class="section">
+            <div class="label">上のステータス行</div>
+            <input id="statusInput" />
+          </div>
+          <div class="section">
+            <div class="label">上のありがとう行</div>
+            <input id="thanksInput" />
+          </div>
+          <div class="section">
+            <div class="label">TODAY’S DROP</div>
+            <input id="dropInput" />
+          </div>
+          <div class="section">
+            <div class="label">締め</div>
+            <textarea id="endingInput" rows="3"></textarea>
+          </div>
+          <div class="btnrow">
+            <button class="btn blue" id="rerollDesign">🎲 ランダム部分だけ引き直す</button>
+            <button class="btn" id="rebuild">本文を再構築</button>
+          </div>
+        </details>
+      </div>
+
+      <div class="section">
+        <details>
+          <summary>🔗 固定リンクを修正する</summary>
+          <div class="section">
+            <div class="label">X</div><input id="xUrl" value="https://x.com/syu_ohuzake">
+          </div>
+          <div class="section">
+            <div class="label">TikTok</div><input id="tiktokUrl" value="https://www.tiktok.com/@dylgmw1l2cfu">
+          </div>
+          <div class="section">
+            <div class="label">YouTube</div><input id="youtubeUrl" value="https://www.youtube.com/@syu10ri6">
+          </div>
+          <div class="section">
+            <div class="label">GUIDE</div><input id="guideUrl" value="https://wp.me/PgSfZN-2">
+          </div>
+        </details>
+      </div>
+
+      <div class="section">
+        <details>
+          <summary>🧠 最近の生成履歴</summary>
+          <div class="history" id="historyBox"></div>
+          <div class="btnrow">
+            <button class="btn" id="clearHistory">履歴を消す</button>
+          </div>
+        </details>
+      </div>
+    </main>
+
+    <aside class="card sticky">
+      <h2>② 完成本文</h2>
+      <div class="status" id="saveStatus">🐰 自動保存ON</div>
+      <div class="mini" style="margin:8px 0 10px">ここも直接編集OK。下の「全文をコピー」は、この欄に今見えている文章をそのままコピーします。</div>
+      <textarea class="preview" id="fullPreview"></textarea>
+      <div class="btnrow">
+        <button class="btn primary" id="copyAll">📋 全文をコピー</button>
+        <button class="btn blue" id="refreshAll">🎲 全体をいい感じに更新</button>
+      </div>
+      <div class="footer-note">
+        ※「全体を更新」は上部ステータス・TODAY’S DROP・締めを引き直します。リンクや生成済みの今日の一言は保持します。
+      </div>
+    </aside>
+  </div>
+</div>
+
+<script>
+const STREAM_TYPES = [
+  "通常配信","めっちゃ笑った配信","ねむかった配信","短め配信","メイクしながら配信",
+  "ミュート放置","配信→ミュート以降配信","ドタバタ配信","深夜枠","話題あり",
+  "歌フェス前歌枠","仕事前配信","お酒枠","真面目枠","おふざけした枠",
+  "初見さん多かった枠","トラブルがあった配信"
+];
+
+const STATES = ["みんな元気がない時","みんなが落ち込んでる時","みんなを応援したい時"];
+
+const EMOJIS = ["😚","😭","🙏","😞","☺️","🥳","🥲","🤔","🫰🏼","🙌","😤","🥺","🤝","🕺","😇","🐰","😎︎︎","👍🏻","✊","✨","🎶","‼️","⁉️","❗️"];
+
+const TYPE_ANGLES = {
+  "通常配信":["いつもの感じ","なんだかんだずっと喋った","特別な事件はないけど楽しかった","みんなとのいつもの空気","普通の日が普通に楽しかった"],
+  "めっちゃ笑った配信":["笑いすぎた","コメント欄がおもろかった","何であんな笑ってたか分からない","笑った記憶しかない","みんなのせいで笑った"],
+  "ねむかった配信":["眠気と戦ってた","喋りながら起きてた感","頭回ってなかった","眠そうな自分へのセルフツッコミ","眠いのに最後まで楽しかった"],
+  "短め配信":["ほんとにちょこっと","あっという間","短時間でも楽しかった","少しでも会えてよかった","ちょい枠でも成立した"],
+  "メイクしながら配信":["準備しながら喋ってた","メイクより喋る方に集中","準備時間まで楽しくなった","ながらなのに普通に楽しかった","メイク完成まで見届けてもらった"],
+  "ミュート放置":["ほぼ喋ってないのにいてくれた","無音なのに成立","ミュートなのに人がいるのおもろい","放置感強め","無音でも空気があった"],
+  "配信→ミュート以降配信":["前半喋って後半静か","途中から無音","前半後半の落差","静かになっても付き合ってくれた","なんだかんだ成立"],
+  "ドタバタ配信":["落ち着きなかった","いろいろ同時進行","何してるか分からないまま進んだ","バタバタ込みで楽しかった","結果オーライ"],
+  "深夜枠":["こんな時間までありがとう","深夜テンション","夜中なのに元気","眠い時間に集まってくれた","深夜だからこその空気"],
+  "話題あり":["その話を一緒に広げてくれた","コメントで話が膨らんだ","みんなの反応があって楽しかった","思ったより盛り上がった","一緒に話せたことが楽しかった"],
+  "歌フェス前歌枠":["緊張してた","そわそわしてた","歌う前に付き合ってもらった","応援が心強かった","緊張してても楽しく歌えた"],
+  "仕事前配信":["仕事前にちょこっと","出発前に喋れて楽しかった","時間ない中でも成立","送り出してもらった感じ","仕事前なのに元気"],
+  "お酒枠":["いつもよりゆるかった","ちょっとテンション違った","みんなと飲んでる感じ","ゆるい空気","いつもと違う枠も楽しかった"],
+  "真面目枠":["珍しくちゃんとした話","ちゃんと聞いてくれた","考えながら喋れた","真面目な空気も一緒に作れた","普段と違う話もできた"],
+  "おふざけした枠":["何してたん？","くだらないことに全力","みんなも一緒にふざけた","配信内容が意味不明","でもめっちゃ楽しかった"],
+  "初見さん多かった枠":["初めましていっぱい","見つけてもらえた","新しい人と喋れた","いつものみんなも一緒に迎えてくれた","また気軽に来てほしい"],
+  "トラブルがあった配信":["何か起きたけど何とかなった","トラブル込みで結果楽しかった","みんなが付き合ってくれた","助けてもらった","結果オーライ"]
+};
+
+const STATUS_SETS = [
+  ["❤️ 元気＋1","✨ 気分＋1","☀️ 笑顔＋1"],
+  ["☀️ 元気＋1","😚 たのしい＋1","✨ 気分＋1"],
+  ["✊ やる気＋1","☺️ 笑顔＋1","✨ HP補給中"],
+  ["🥳 たのしい＋1","🙌 元気＋1","✨ 気分＋1"],
+  ["🐰 回復＋1","☀️ 元気＋1","🕺 ノリ＋1"]
+];
+
+const THANKS_LINES = [
+  "💪🏻 今日も来てくれてさんきゅーべりー！",
+  "🐰 今日も楽しい枠にしてくれてありがと〜‼️",
+  "🙌 今日もいっぱい付き合ってくれてありがとっ！",
+  "🥳 今日も楽しく配信させてくれてさんきゅー‼️",
+  "✊ 今日も一緒に遊んでくれてありがと〜！"
+];
+
+const DROPS = [
+  "なんかちょっと元気",
+  "今日の笑った記憶",
+  "謎のやる気＋1",
+  "ちょっとだけ回復",
+  "今日の楽しかったぶん",
+  "明日なんとかなる気",
+  "眠気耐性＋1",
+  "なんかいけそう感",
+  "笑顔の残りHP",
+  "おつかれ回復パック",
+  "気分転換＋1",
+  "今日のノリ"
+];
+
+const ENDINGS = [
+  "以上っ！\n本日分のHP補給でした💪🏻🐰\n\nまた遊びにきてね〜！！！",
+  "本日のHP補給おわりっ‼️\n今日もありがと〜🐰✨\n\nまた遊ぼー！！！",
+  "以上！今日のぶんでした✊✨\n楽しい配信にしてくれてありがとっ‼️\n\nまたね〜🐰",
+  "HP＋1しといたので本日は解散っ‼️\n今日もさんきゅーべりー🐰✨\n\nまた遊びにきてね〜！"
+];
+
+const OPENERS = [
+  "今日も","いや今日","なんだかんだ","気づいたら","今日ほんと","本日","今日は"
+];
+
+const THANK_PHRASES = [
+  "楽しい枠にしてくれてありがと〜",
+  "今日もいっぱい付き合ってくれてありがと",
+  "こんな楽しい配信にしてくれてさんきゅー",
+  "一緒に遊んでくれてありがと",
+  "来てくれたみんなありがと〜",
+  "今日も楽しく配信させてくれてありがと"
+];
+
+const stateChips = document.getElementById("stateChips");
+const streamChips = document.getElementById("streamChips");
+
+function makeChip(text, parent, className=""){
+  const b=document.createElement("button");
+  b.className="chip "+className;
+  b.textContent=text;
+  b.dataset.value=text;
+  b.onclick=()=>{
+    if(className.includes("state")){
+      [...parent.children].forEach(x=>{ if(x!==b) x.classList.remove("active"); });
+    }
+    b.classList.toggle("active");
+  };
+  parent.appendChild(b);
+}
+STREAM_TYPES.forEach(x=>makeChip(x,streamChips));
+STATES.forEach(x=>makeChip(x,stateChips,"state"));
+
+const topicToggle=document.getElementById("topicToggle");
+topicToggle.onclick=()=>{
+  topicToggle.classList.toggle("active");
+  document.getElementById("topicArea").style.display=topicToggle.classList.contains("active")?"block":"none";
+};
+
+function pick(arr){ return arr[Math.floor(Math.random()*arr.length)] }
+function pickDistinct(arr,n){
+  const copy=[...arr].sort(()=>Math.random()-.5);
+  return copy.slice(0,n);
+}
+function emoji(){ return pick(EMOJIS) }
+
+function todayMMDD(){
+  const d=new Date();
+  return String(d.getMonth()+1).padStart(2,"0")+"."+String(d.getDate()).padStart(2,"0");
+}
+document.getElementById("dateInput").value=todayMMDD();
+
+function historyGet(){
+  try{return JSON.parse(localStorage.getItem("shuriri_thanks_history")||"[]")}catch(e){return[]}
+}
+function historySet(v){
+  localStorage.setItem("shuriri_thanks_history",JSON.stringify(v.slice(0,20)));
+  renderHistory();
+}
+function addHistory(text,meta={}){
+  if(!text.trim())return;
+  const h=historyGet();
+  h.unshift({text,meta,ts:Date.now()});
+  historySet(h);
+}
+function renderHistory(){
+  const h=historyGet();
+  const box=document.getElementById("historyBox");
+  box.innerHTML=h.length?h.map(x=>`<div class="history-item">${escapeHtml(x.text)}</div>`).join(""):'<div class="mini">まだ履歴なし</div>';
+}
+function escapeHtml(s){return s.replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
+
+function selectedValues(container){
+  return [...container.querySelectorAll(".chip.active")].map(x=>x.dataset.value);
+}
+
+function recentTexts(){ return historyGet().map(x=>x.text).join("\n") }
+
+function chooseFresh(arr){
+  const recent=recentTexts();
+  const fresh=arr.filter(x=>!recent.includes(x));
+  return pick(fresh.length?fresh:arr);
+}
+
+function buildGeneratedLine(){
+  const types=selectedValues(streamChips);
+  const state=selectedValues(stateChips)[0]||"";
+  const topicOn=topicToggle.classList.contains("active");
+  const topic=document.getElementById("topicText").value.trim();
+  const topicMood=document.getElementById("topicMood").value;
+  const event=document.getElementById("eventText").value.trim();
+
+  const chosenTypes = types.length?types:["通常配信"];
+  let strong = chosenTypes.find(x=>["トラブルがあった配信","ミュート放置","配信→ミュート以降配信","めっちゃ笑った配信","話題あり"].includes(x)) || chosenTypes[0];
+  let second = chosenTypes.find(x=>x!==strong) || "";
+
+  const angle1=chooseFresh(TYPE_ANGLES[strong]||TYPE_ANGLES["通常配信"]);
+  const angle2=second?chooseFresh(TYPE_ANGLES[second]||[]):"";
+
+  const open=chooseFresh(OPENERS);
+  let first="";
+
+  const special = {
+    "めっちゃ笑った配信":[
+      `${open}笑いすぎた😭‼️ ${angle1}感じでずっとおもろかった`,
+      `${open}何であんな笑ってたん⁉️😭 ${angle1}すぎて最高だった`,
+      `${open}みんなおもろすぎ😤‼️ ${angle1}の記憶しかない`
+    ],
+    "ねむかった配信":[
+      `${open}眠かった〜🥲 でも${angle1}感じで、なんだかんだ最後まで楽しかった`,
+      `${open}眠気つよめだった😇 ${angle1}けど普通に楽しかった`,
+      `${open}だいぶ眠そうだったけど🥲 ${angle1}感じでちゃんと楽しかった`
+    ],
+    "短め配信":[
+      `${open}ほんとにちょこっとだったけど、${angle1}感じで楽しかった`,
+      `${open}短め枠だった‼️ ${angle1}のに来てくれてうれしかった`,
+      `${open}あっという間だった〜‼️ ${angle1}感じでちゃんと楽しかった`
+    ],
+    "メイクしながら配信":[
+      `${open}メイクしながらずっと喋ってた😚 ${angle1}感じで楽しかった`,
+      `${open}準備枠のはずが普通に雑談してた🤣`.replace("🤣","😭")+` ${angle1}`,
+      `${open}メイクしながらだったけど、${angle1}感じで楽しかった`
+    ],
+    "ミュート放置":[
+      `${open}ほぼ喋ってない時間あったのにいてくれるの何😭 ${angle1}の普通におもろかった`,
+      `${open}ミュート放置だったのに成立してた😇 ${angle1}`,
+      `${open}無音タイムまで付き合ってくれてたのありがたすぎ🙏 ${angle1}`
+    ],
+    "配信→ミュート以降配信":[
+      `${open}前半喋って後半ミュートという謎構成😇 ${angle1}`,
+      `${open}途中から急に静かになったのに付き合ってくれてありがと😭 ${angle1}`,
+      `${open}喋る枠からミュート枠に進化しました😎︎︎ ${angle1}`
+    ],
+    "ドタバタ配信":[
+      `${open}ずっとドタバタしてた😇 ${angle1}けど結果めっちゃ楽しかった`,
+      `${open}落ち着きゼロ‼️ ${angle1}感じだったけど楽しかった`,
+      `${open}何してたんだろってくらいバタバタ😤 ${angle1}`
+    ],
+    "深夜枠":[
+      `${open}こんな時間までありがと〜😇 ${angle1}感じで楽しかった`,
+      `${open}深夜テンションだった‼️ ${angle1}感じで今日も楽しかった`,
+      `${open}夜中なのにみんな元気で笑う😭 ${angle1}`
+    ],
+    "歌フェス前歌枠":[
+      `${open}歌フェス前で緊張してた🥺🎶 ${angle1}のありがたかった`,
+      `${open}そわそわしながら歌ってた🥲🎶 ${angle1}`,
+      `${open}緊張しつつ歌枠‼️ ${angle1}感じで楽しかった`
+    ],
+    "仕事前配信":[
+      `${open}仕事前にちょこっと配信✊ ${angle1}感じで楽しかった`,
+      `${open}仕事前なのに普通に元気に喋ってた😎︎︎ ${angle1}`,
+      `${open}出発前の枠だった‼️ ${angle1}のうれしかった`
+    ],
+    "お酒枠":[
+      `${open}お酒枠でちょいゆるめ😚 ${angle1}感じが楽しかった`,
+      `${open}いつもとちょっと違うテンションだった😎︎︎ ${angle1}`,
+      `${open}お酒ありでゆるっと喋った〜🥳 ${angle1}`
+    ],
+    "真面目枠":[
+      `${open}珍しくちゃんと真面目な話した🤔 ${angle1}のありがたかった`,
+      `${open}今日はわりと真面目‼️ ${angle1}感じで話せてよかった`,
+      `${open}ちゃんと考えながら喋った🤔 ${angle1}`
+    ],
+    "おふざけした枠":[
+      `${open}何してたん？？？😭 ${angle1}感じでずっと楽しかった`,
+      `${open}くだらないことに全力だった😤‼️ ${angle1}`,
+      `${open}今日もちゃんとふざけました😎︎︎ ${angle1}`
+    ],
+    "初見さん多かった枠":[
+      `${open}初めましていっぱいでうれしかった🥳 ${angle1}`,
+      `${open}新しく見つけてくれた人多くてびっくり‼️ ${angle1}`,
+      `${open}初見さんいっぱい来てくれた〜🙌 ${angle1}`
+    ],
+    "トラブルがあった配信":[
+      `${open}ちょいトラブルあったけど何とかなった😇✊ ${angle1}`,
+      `${open}またなんか起きたけど結果オーライ😎︎︎ ${angle1}`,
+      `${open}トラブル込みで今日も無事終了‼️ ${angle1}`
+    ],
+    "通常配信":[
+      `${open}いつもの感じでいっぱい喋った〜😚 ${angle1}`,
+      `${open}特に事件ないのに普通に楽しかった☺️ ${angle1}`,
+      `${open}なんだかんだずっと喋ってた‼️ ${angle1}`
+    ]
+  };
+
+  first=pick(special[strong]||special["通常配信"]);
+
+  if(second && Math.random()<0.75){
+    first += `。${angle2}`;
+  }
+  if(event){
+    first += `。${event}もあって、そこまで込みで楽しかった`;
+  }
+  if(topicOn && topic){
+    const topicPhrases={
+      "楽しかった":`${topic}の話みんなとできたの楽しかった`,
+      "盛り上がった":`${topic}の話めっちゃ盛り上がった`,
+      "いっぱい話した":`${topic}の話いっぱいできてよかった`,
+      "反応がおもしろかった":`${topic}の話した時のみんなの反応おもろかった`
+    };
+    first += `。${topicPhrases[topicMood]}`;
+  }
+
+  let thanks=chooseFresh(THANK_PHRASES);
+  let endEmoji=pickDistinct(EMOJIS.filter(e=>!["😞","🥺"].includes(e)),2).join("");
+
+  if(state==="みんな元気がない時"){
+    return `${first}。今日は元気ない人も多かったけど、来て一緒にいてくれてありがと☺️ HP＋1くらい持ってって✊✨`;
+  }
+  if(state==="みんなが落ち込んでる時"){
+    return `${first}。今日はちょっとでも一緒に笑えたり気がまぎれてたらうれしい☺️ 来てくれてありがと🙏✨`;
+  }
+  if(state==="みんなを応援したい時"){
+    return `${first}。${thanks}‼️ 今日も一緒にやってこ〜✊✨`;
+  }
+  return `${first}。${thanks}‼️${endEmoji}`;
+}
+
+function randomizeDesign(){
+  const set=pick(STATUS_SETS);
+  document.getElementById("statusInput").value=set.join("　");
+  document.getElementById("thanksInput").value=pick(THANKS_LINES);
+  document.getElementById("dropInput").value=pick(DROPS);
+  document.getElementById("endingInput").value=pick(ENDINGS);
+}
+
+function buildFull(){
+  const hook=document.getElementById("hookInput").value.trim();
+  const date=document.getElementById("dateInput").value.trim();
+  const status=document.getElementById("statusInput").value.trim();
+  const thanks=document.getElementById("thanksInput").value.trim();
+  const drop=document.getElementById("dropInput").value.trim();
+  const daily=document.getElementById("dailyMessage").value.trim();
+  const ending=document.getElementById("endingInput").value.trim();
+  const x=document.getElementById("xUrl").value.trim();
+  const tt=document.getElementById("tiktokUrl").value.trim();
+  const yt=document.getElementById("youtubeUrl").value.trim();
+  const guide=document.getElementById("guideUrl").value.trim();
+
+  return `${hook}
+
+　　　☀️ THANK YOU！ 🐰
+　　　　　 ${date}
+
+╭━━━━━━━━━━━━━━╮
+　${status}
+　${thanks}
+╰━━━━━━━━━━━━━━╯
+
+━━━━━━━━━━━━━━
+　　　　HP＋1 SPOT
+━━━━━━━━━━━━━━
+
+📣 LIVE & DAILY｜X
+${x}
+
+🎬 SHORT｜TikTok
+${tt}
+
+📺 MOVIE｜YouTube
+${yt}
+
+📖 GUIDE｜プロフィール・思い出・弾幕
+${guide}
+
+🐰 FAN NAME｜#しゅりなー
+💪🏻🐰 FAN MARK｜💪🏻🐰
+
+プロフィールで見つけると
+好感度バグ上がり📈✨
+
+━━━━━━━━━━━━━━
+　　　🎁 TODAY’S DROP
+━━━━━━━━━━━━━━
+
+╭━━━━━━━━━━━━━━╮
+　🎁「${drop}」
+　☀️ 元気＋1　✨ おまけ＋1　❤️ HP＋1
+╰━━━━━━━━━━━━━━╯
+
+来てくれて
+さんきゅーべりーーー！！🐰✨
+
+初見さんも！ひさしぶりさんも！
+見る専さんも！いつものみんなも！
+
+　　　＼ みーんなありがとう！ ／
+
+💬 今日の配信どうだった？
+
+「${daily}」
+
+${ending}`;
+}
+
+function setPreview(){
+  document.getElementById("fullPreview").value=buildFull();
+  saveDraft();
+}
+function saveDraft(){
+  const data={
+    date:dateInput.value, hook:hookInput.value, status:statusInput.value, thanks:thanksInput.value,
+    drop:dropInput.value, ending:endingInput.value, daily:dailyMessage.value,
+    x:xUrl.value,tiktok:tiktokUrl.value,youtube:youtubeUrl.value,guide:guideUrl.value,
+    preview:fullPreview.value
+  };
+  localStorage.setItem("shuriri_thanks_draft",JSON.stringify(data));
+}
+function loadDraft(){
+  try{
+    const d=JSON.parse(localStorage.getItem("shuriri_thanks_draft")||"null");
+    if(!d)return false;
+    dateInput.value=d.date||todayMMDD();
+    hookInput.value=d.hook||"🎁 HP＋1置いときます！";
+    statusInput.value=d.status||"";
+    thanksInput.value=d.thanks||"";
+    dropInput.value=d.drop||"";
+    endingInput.value=d.ending||"";
+    dailyMessage.value=d.daily||"";
+    xUrl.value=d.x||xUrl.value;
+    tiktokUrl.value=d.tiktok||tiktokUrl.value;
+    youtubeUrl.value=d.youtube||youtubeUrl.value;
+    guideUrl.value=d.guide||guideUrl.value;
+    fullPreview.value=d.preview||"";
+    return true;
+  }catch(e){return false}
+}
+
+document.getElementById("generateLine").onclick=()=>{
+  const t=buildGeneratedLine();
+  dailyMessage.value=t;
+  addHistory(t,{kind:"daily"});
+  setPreview();
+};
+document.getElementById("regenLine").onclick=()=>{
+  const t=buildGeneratedLine();
+  dailyMessage.value=t;
+  addHistory(t,{kind:"daily"});
+  setPreview();
+};
+document.getElementById("applyLine").onclick=setPreview;
+document.getElementById("rerollDesign").onclick=()=>{randomizeDesign();setPreview()};
+document.getElementById("rebuild").onclick=setPreview;
+document.getElementById("refreshAll").onclick=()=>{randomizeDesign();setPreview()};
+document.getElementById("copyAll").onclick=async()=>{
+  const text=fullPreview.value;
+  try{
+    await navigator.clipboard.writeText(text);
+  }catch(e){
+    fullPreview.select();
+    document.execCommand("copy");
+  }
+  const b=document.getElementById("copyAll");
+  const old=b.textContent;
+  b.textContent="✅ コピーした！";
+  setTimeout(()=>b.textContent=old,1300);
+};
+document.getElementById("clearHistory").onclick=()=>{localStorage.removeItem("shuriri_thanks_history");renderHistory()};
+
+["dateInput","hookInput","statusInput","thanksInput","dropInput","endingInput","dailyMessage","xUrl","tiktokUrl","youtubeUrl","guideUrl","fullPreview"]
+.forEach(id=>{
+  document.getElementById(id).addEventListener("input",()=>{
+    if(id==="fullPreview") saveDraft();
+  });
+});
+
+randomizeDesign();
+if(!loadDraft()) setPreview();
+renderHistory();
+</script>
+</body>
+</html>
