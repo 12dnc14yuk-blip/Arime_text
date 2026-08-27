@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>しゅり ありがとうメッセージテンプレ集 v3</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#fff8ec;color:#5f3a1b;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif}
+.wrap{max-width:900px;margin:auto;padding:16px}
+h1{margin:0 0 6px;font-size:28px}
+.sub{margin:0 0 14px;color:#8d6b4b;font-size:14px;line-height:1.6}
+.card{background:#fff;border:2px solid #ffd39a;border-radius:20px;padding:16px;box-shadow:0 8px 25px rgba(90,50,10,.06);margin-bottom:14px}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+button{border:0;border-radius:14px;min-height:48px;padding:12px;font:inherit;font-weight:800;cursor:pointer}
+.template-btn{background:#fff2df;color:#8a5318;border:2px solid #ffd39a;text-align:left}
+.template-btn small{display:block;font-weight:600;opacity:.7;margin-top:3px}
+.controls{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:12px}
+.copy{background:#ff9717;color:#fff} .copy-all{background:#5f3a1b;color:#fff} .clear{background:#ffe7cd;color:#8a5318}
+textarea{width:100%;min-height:330px;resize:vertical;border:2px solid #ffd39a;border-radius:16px;padding:14px;font:inherit;font-size:15px;line-height:1.7;color:#5f3a1b;background:#fffdf8}
+label{display:block;font-weight:800;margin-bottom:8px}
+.tip{font-size:13px;line-height:1.6;color:#8d6b4b;margin-top:10px}
+.status{margin-top:10px;font-size:13px;font-weight:700;color:#8a5318;min-height:20px}
+@media(max-width:700px){.grid{grid-template-columns:1fr}.controls{grid-template-columns:1fr}textarea{min-height:300px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>🐰 しゅり ありがとうメッセージテンプレ集 v3</h1>
+<p class="sub">タイトルを押す → 必要なら少し直す → 全文コピーで完成！</p>
+
+<div class="card"><div class="grid" id="templateGrid"></div></div>
+
+<div class="card">
+<label for="editor">今日の本文</label>
+<textarea id="editor"></textarea>
+<div class="controls">
+<button class="copy" id="copyTextBtn">✍️ 本文だけコピー</button>
+<button class="copy-all" id="copyAllBtn">📋 完成形を全文コピー</button>
+<button class="clear" id="clearBtn">🧹 クリア</button>
+</div>
+<div class="status" id="status"></div>
+<p class="tip">「きっといい日になりますように✊🏼」以降は固定。本文だけ差し替わります。</p>
+</div>
+</div>
+
+<script>
+const intro = " 来てくれてさんきゅーべりー🐰\n　　 まっちょだよ(  \"̮  )ᕗ\n\n🐰＜ｼｭﾘﾘｶﾗﾒｯｾｰｼﾞﾀﾞﾖ✉\n配信に遊びに来てくれて\nありがとう(՞ ᴗ ᴗ՞)”";
+const fixedAfterBody = "きっといい日になりますように✊🏼\n\n｡.ꕤ……… ꪔ̤  ̖́-‬‪♡- ̗̀ ꪔ̤  ̖́………ꕤ.。\n\nｷﾞﾌﾄやｻﾎﾟｰﾀｰ獲得者へ\n別途送信してます🧡\n\n｡*⑅🔖 ┈┈┈┈┈┈┈┈ᝰ✍🏼*｡\n【💬X（旧Twitter）🕊️】\n\nhttps://x.com/syu_ohuzake\n\n- ̗̀📣お知らせや\n宣伝もココからっ↑\n\n♡﹏﹏﹏﹏﹏﹏﹏﹏﹏﹏﹏♡\n【⛓️lit link💌ᩚ】\n\nhttps://lit.link/shuriririririri\n\nᝰ✍🏻私の詳しい経歴や\n過去の思い出💭ྀི\n配信を楽しむための\n弾幕をまとめてみたよ✨️\n\nwp.me/PgSfZN-2\n\n♡﹏﹏﹏﹏﹏﹏﹏﹏﹏﹏﹏♡\n🌷Another🌷\n\n🌼TikTok\nhttps://www.tiktok.com/@dylgmw1l2cfu?_t=ZS-8tnEIHnx8ks&_r=1\n\n🌼YouTube\nhttps://www.youtube.com/@syu10ri6\n\n♡﹏﹏﹏﹏﹏﹏﹏﹏﹏﹏﹏♡\n【🌷好感度バグ上がり🌷】\n\n♡ファンネーム\n→#しゅりなー\n♡ファンマーク\n→💪🏻🐰\n\nプロフィールに書いてくれたら\n大喜びします🥳🌼\n｡.ꕤ……… ꪔ̤  ̖́-‬‪♡- ̗̀ ꪔ̤  ̖́………ꕤ.。";
+const templates = [
+{title:"いつもの枠",note:"迷ったらこれ",body:"今日も遊びに来てくれてありがとう〜！\nなんだかんだみんなとお話ししてる時間が\nいちばん「配信してる〜！」って感じして好きです🐰\nちょっとしか話せなかった人も、ずっといてくれた人も\n来てくれたのちゃんと見えてるよ✊🏼\nまたタイミング合う時にいっぱいお話ししよ〜！"},
+{title:"わちゃわちゃ回",note:"笑いすぎた日",body:"今日はほんとにずっと何してたんだろww\nでもめちゃくちゃ笑ったし、たのしかった〜！！\nこういうくだらないことで一緒に笑える時間\nかなり好きです🐰\nまた意味わからんことで笑おうねww"},
+{title:"まったり回",note:"ゆっくり話した日",body:"今日はなんかいつもより\nゆっくりお話しできた気がする〜！\nこういう何でもない話をだらだらする時間も\n結構すきなんだよね(՞ ᴗ ᴗ՞)”\nまたのんびりしにきてね🐰"},
+{title:"あまり話せなかった日",note:"コメント拾えなかった日",body:"今日はあんまり一人ひとりと\nゆっくりお話しできなくてごめんね〜！\nでも来てくれてたのはちゃんと見えてたよ🐰\nまた次の時いっぱいお話しできたらうれしい！\n懲りずに遊びにきてね✊🏼"},
+{title:"短時間配信",note:"ちょっとだけ配信",body:"短い時間だったのに\n遊びに来てくれてありがとう〜！\nほんのちょっとでもみんなの顔見れて\n「配信してよかった！」ってなりました🐰\n次はもうちょいゆっくり話そ〜！"},
+{title:"久しぶり配信",note:"少し間が空いた日",body:"ひさしぶりにみんなと話せて\nめちゃくちゃうれしかった〜！！\n久々なのに来てくれるのありがたすぎる🐰\nやっぱり配信でみんなと喋ってる時間好きだな〜って\n改めて思いました✊🏼\nまたいっぱい遊ぼうね！"},
+{title:"深夜テンション",note:"夜中に元気だった日",body:"こんな時間まで一緒にいてくれてありがと〜！\n夜中ってなんであんなに\nどうでもいい話が面白くなるんだろうねww\n今日もいっぱい笑えてたのしかった🐰🌙\nまた夜更かし仲間しよね✊🏼"},
+{title:"元気もらった日",note:"私が回復した日",body:"今日なんか私の方が\nみんなから元気もらった気がする〜！\n来てくれて、話してくれて、\nいっぱい笑わせてくれてありがとう🐰\nHP回復配信のはずなのに\nこっちが回復させてもらってましたww"},
+{title:"みんなにHPあげたい日",note:"みんな疲れてそうな日",body:"なんか今日はみんな\nちょっとお疲れモードだった気がする〜！\n毎日ちゃんと生きてるだけでえらいので、\n今日ここに来てくれた人には勝手にHP+1しときます🐰✊🏼\nほんのちょっとでも笑えたり\n力抜けたりしてたらうれしいな。\n明日も無理しすぎずいこ〜！"},
+{title:"ゆっくり休んでね",note:"今日は休んでほしい日",body:"今日も来てくれてありがとう〜🐰\nなんかみんな頑張りすぎてない！？って思ったので\n今日はもう、できること終わったら\nあったかくしてゆっくり休んでね(՞ ᴗ ᴗ՞)”\n明日の自分に任せられるものは任せちゃお〜！\nまた元気な時に会おうね✊🏼"},
+{title:"おつかれさま強め",note:"頑張ったみんなへ",body:"今日ここまでたどり着いたみんな、\nとりあえずおつかれさま〜！！🐰\n今日が良い日だった人も\nなんか全然うまくいかなかった人も、\n今日の分はもう終了でいいと思います✊🏼\n配信でちょっとでもHP戻ってたらうれしい！\nゆっくり休んでね〜！"},
+{title:"やさしく締めたい日",note:"ちょっと静かな気分",body:"今日も会いに来てくれてありがとう🐰\nいっぱい話せた人も、そっといてくれた人も\n同じ時間を一緒に過ごしてくれたことがうれしいです。\n今日はもうゆっくりして、\n明日のHPをちょっとずつ貯めておこ〜(՞ ᴗ ᴗ՞)”\nまた会おうね。"},
+{title:"初見さん多め",note:"新しい人が多かった日",body:"今日ははじめましての人とも\nたくさんお話しできてうれしかった〜！\nいつも来てくれるみんなも\n一緒にわちゃわちゃしてくれてありがとう🐰\n初めましてだった人も、\nまた気軽に遊びにきてね〜！"},
+{title:"いつメン多め",note:"常連さん多かった日",body:"今日も知ってる顔がいっぱいで\nなんか安心した〜🐰\n何も決めてなくても集まって\nその場でくだらない話してる感じ、かなり好きですww\nいつも来てくれてありがとう！\nまたいつもの感じで遊ぼ〜✊🏼"},
+{title:"眠かった日",note:"眠気すごかった日",body:"今日は途中から眠気と戦いながらの配信でしたww\nそれでも最後までいてくれたり\nちょこっと顔出してくれたりありがとう〜🐰\n次はもうちょいHPある状態で会いたいww\nまた遊びにきてね✊🏼"},
+{title:"仕事終わり枠",note:"へろへろ帰宅後",body:"仕事終わりに遊びに来てくれてありがとう〜！\nへろへろだったのに\nみんなと喋ってたらなんだかんだ元気出たww\n今日も付き合ってくれてありがと🐰\nまた一緒にHP回復しよ〜✊🏼"},
+{title:"ミュート放置枠",note:"配信をお休みしてた日",body:"今日はミュート放置枠に\n遊びに来てくれてありがとう〜！🐰\n配信自体はお休みしてたけど、\nそれでも枠に来てくれたり\nそっと一緒にいてくれたりするのうれしいです。\nまた元気な時にいっぱいお話ししようね✊🏼"},
+{title:"ミュート放置・完全休養",note:"ほんとに何もしてない日",body:"今日はほぼ何もしてない\nミュート放置枠でした🐰\nお休みしてるだけの枠なのに\n来てくれてありがとう〜！\nこういう日も一緒にいてくれるの、\nなんかちょっと不思議でうれしいww\nまた元気になったらいっぱい喋ろうね✊🏼"},
+{title:"作業しながら枠",note:"作業メインだった日",body:"今日は作業しながらの配信だったけど\n付き合ってくれてありがとう〜！\nあんまり喋れない時間もあったのに\nそばにいてくれる感じがうれしかった🐰\n作業も進んだし、みんなとも会えたし一石二鳥✊🏼"},
+{title:"歌フェス前の歌枠",note:"めっっっちゃレア",body:"今日はめっっっちゃ珍しい\n歌枠に来てくれてありがとう〜！！🎤🐰\n歌フェス前じゃないとほぼ出現しないレア枠ですww\n普段やらなさすぎて私も若干そわそわしてるけど、\n聴きに来てくれるのめちゃくちゃうれしい！\n本番も楽しめるように練習がんばる〜✊🏼"},
+{title:"話題を自由に①",note:"今日は○○の話した！",body:"今日は【ここに今日の話題】の話\nいっぱいできてたのしかった〜！\n最初こんなに話す予定じゃなかった気がするのに\n気付いたらめちゃくちゃ広がってたww\nみんなの話も聞けておもしろかった🐰\nまたいろんな話しよ〜！"},
+{title:"話題を自由に②",note:"印象に残った話題",body:"今日いちばん印象に残ってるの\n【ここに話題・出来事】かもしれないww\nなんであそこからその話になったんだろうね🐰\nでもこういう予定してなかった話が\n急に盛り上がるの配信っぽくて好き！\nまたいっぱい脱線しよ〜✊🏼"},
+{title:"話題を自由に③",note:"自分の出来事を話した日",body:"今日は【ここに今日あったこと】の話を\nみんなに聞いてもらえてよかった〜！\n自分の中だけに置いてるより\n人に話すとなんか急に面白くなるのなんなんだろww\n聞いてくれてありがとう🐰\nまたなんか起きたら報告します✊🏼"},
+{title:"話題を自由に④",note:"ちょっと真面目な話",body:"今日は【ここに話題】について\nちょっといつもよりちゃんと話した気がする！\nこういう話もみんなとできるの\nなんかうれしいな〜って思いました🐰\nいろんな考え聞けるのも配信のおもしろいところ。\nまたゆっくり話そ〜！"},
+{title:"話題を自由に⑤",note:"変な話で盛り上がった",body:"今日は【ここに話題】で\nなんであんなに盛り上がったんだろww\n絶対そこ掘り下げる予定じゃなかったでしょ😂\nでもこういう謎の盛り上がり\nめちゃくちゃ好きです🐰\nまた変なところで盛り上がろ〜！"},
+{title:"なんか良い日",note:"理由ないけど楽しかった",body:"今日なんかめちゃくちゃいい日だった〜！\n何がって言われると説明できないんだけどww\nみんなと喋って笑って\n「今日も配信してよかったな〜」って思いました🐰\nこういう日また作ろうね✊🏼"}
+];
+
+const grid=document.getElementById('templateGrid');
+const editor=document.getElementById('editor');
+const status=document.getElementById('status');
+
+function setStatus(t){status.textContent=t;setTimeout(()=>{if(status.textContent===t)status.textContent='';},1800)}
+
+templates.forEach(t=>{
+ const btn=document.createElement('button');
+ btn.className='template-btn';
+ btn.innerHTML=`${t.title}<small>${t.note}</small>`;
+ btn.addEventListener('click',()=>{editor.value=t.body;setStatus(`「${t.title}」を読み込みました`);});
+ grid.appendChild(btn);
+});
+
+async function copyText(text){
+ try{await navigator.clipboard.writeText(text);}
+ catch(e){const ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();}
+}
+
+document.getElementById('copyTextBtn').addEventListener('click',async()=>{
+ await copyText(editor.value);setStatus('本文をコピーしました');
+});
+
+document.getElementById('copyAllBtn').addEventListener('click',async()=>{
+ const full=`${intro}
+
+${editor.value}
+
+${fixedAfterBody}`;
+ await copyText(full);setStatus('完成形を全文コピーしました');
+});
+
+document.getElementById('clearBtn').addEventListener('click',()=>{editor.value='';setStatus('クリアしました')});
+editor.value=templates[0].body;
+</script>
+</body>
+</html>
