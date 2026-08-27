@@ -386,11 +386,11 @@ const STATUS_SETS = [
 ];
 
 const THANKS_LINES = [
-  "💪🏻 今日もさんきゅーべりー！",
-  "🐰 今日も楽しい枠ありがと〜‼️",
-  "🙌 今日も付き合ってくれてありがと！",
-  "🥳 今日も楽しくできた！さんきゅー‼️",
-  "✊ 今日も一緒に遊んでくれてありがと！"
+  "💪🏻 今日も来てくれてさんきゅーべりー！",
+  "🐰 今日も楽しい枠にしてくれてありがと〜‼️",
+  "🙌 今日もいっぱい付き合ってくれてありがとっ！",
+  "🥳 今日も楽しく配信させてくれてさんきゅー‼️",
+  "✊ 今日も一緒に遊んでくれてありがと〜！"
 ];
 
 const DROPS = [
@@ -696,9 +696,30 @@ function buildFull(){
   const status=document.getElementById("statusInput").value.trim();
   const thanks=document.getElementById("thanksInput").value.trim();
   const statusParts=status.split("　").filter(Boolean);
-  const statusDisplay=statusParts.length>=3
-    ? `　${statusParts.slice(0,2).join("　")}\n　${statusParts.slice(2).join("　")}`
+  const statusDisplay=statusParts.length
+    ? statusParts.map(x=>`　${x}`).join("\n")
     : `　${status}`;
+
+  function wrapThanksLine(text){
+    const clean=text.trim();
+    const explicit = {
+      "🥳 今日も楽しく配信させてくれてさんきゅー‼️":"　🥳 今日も楽しく\n　　 配信させてくれて\n　　 さんきゅー‼️",
+      "🐰 今日も楽しい枠にしてくれてありがと〜‼️":"　🐰 今日も楽しい枠に\n　　 してくれてありがと〜‼️",
+      "🙌 今日もいっぱい付き合ってくれてありがとっ！":"　🙌 今日もいっぱい\n　　 付き合ってくれて\n　　 ありがとっ！",
+      "💪🏻 今日も来てくれてさんきゅーべりー！":"　💪🏻 今日も来てくれて\n　　 さんきゅーべりー！",
+      "✊ 今日も一緒に遊んでくれてありがと〜！":"　✊ 今日も一緒に\n　　 遊んでくれてありがと〜！"
+    };
+    if(explicit[clean]) return explicit[clean];
+
+    // Generic fallback: split after roughly 9–11 Japanese chars, preserving emoji at start.
+    const chars=[...clean];
+    if(chars.length<=14) return `　${clean}`;
+    const first=chars.slice(0,10).join("");
+    const rest=chars.slice(10).join("");
+    if(rest.length<=11) return `　${first}\n　　 ${rest}`;
+    return `　${first}\n　　 ${[...rest].slice(0,10).join("")}\n　　 ${[...rest].slice(10).join("")}`;
+  }
+  const thanksDisplay=wrapThanksLine(thanks);
   const drop=document.getElementById("dropInput").value.trim();
   const daily=document.getElementById("dailyMessage").value.trim();
   const ending=document.getElementById("endingInput").value.trim();
@@ -714,7 +735,7 @@ function buildFull(){
 
 ╭━━━━━━━━━━━╮
 ${statusDisplay}
-　${thanks}
+${thanksDisplay}
 ╰━━━━━━━━━━━╯
 
 ━━━━━━━━━━━━━━
