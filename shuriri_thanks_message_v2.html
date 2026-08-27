@@ -1,0 +1,507 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#fffaf4" />
+<title>しゅりり ありがとうメッセージメーカー v2.0</title>
+<style>
+:root{
+  --bg:#fffaf4;--card:#fff;--ink:#3a2b22;--muted:#8a7466;--line:#f0dfcf;
+  --orange:#ff9717;--orange2:#fff0da;--lav:#f2ebff;--red:#d94a4a;--green:#4aa36b;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic UI","Yu Gothic",sans-serif}
+.wrap{max-width:820px;margin:auto;padding:16px 14px 100px}
+h1{font-size:24px;margin:6px 0 4px}
+.sub{font-size:13px;line-height:1.65;color:var(--muted);margin-bottom:12px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:14px;margin:12px 0;box-shadow:0 5px 20px rgba(100,60,20,.05)}
+.section-title{font-size:16px;font-weight:900;margin-bottom:8px}
+.small{font-size:12px;color:var(--muted);line-height:1.55}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:600px){.grid{grid-template-columns:1fr}}
+input,select,textarea{width:100%;font:inherit;font-size:16px;border:1px solid #e6d9ce;border-radius:12px;padding:11px 12px;background:#fff;color:var(--ink)}
+textarea{min-height:330px;resize:vertical;line-height:1.65}
+label{display:block;font-size:13px;font-weight:800;margin:7px 0 5px}
+button,.btn{appearance:none;border:0;border-radius:13px;padding:11px 13px;font-weight:850;font-size:14px;cursor:pointer}
+.primary{background:var(--orange);color:#fff}
+.soft{background:var(--orange2);color:#8a4c00}
+.ghost{background:#f3f1ef;color:#4e433d}
+.danger{background:#fff0f0;color:var(--red)}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.filebox{border:2px dashed #efc896;border-radius:16px;padding:14px;background:#fffdf9}
+.filebox input{margin-top:8px}
+.progress{height:8px;border-radius:99px;background:#f0ebe6;overflow:hidden;margin-top:10px}
+.bar{height:100%;width:0;background:linear-gradient(90deg,#ff9717,#ff78a8);transition:.2s}
+.status{white-space:pre-wrap;font-size:13px;color:var(--muted);margin-top:8px}
+.pill{display:inline-block;border-radius:999px;padding:5px 9px;background:#fff1de;color:#875012;font-size:12px;font-weight:800}
+.pill.new{background:var(--lav);color:#6f4db5}
+.peopleHead,.person{display:grid;grid-template-columns:34px minmax(0,1.6fr) 142px 64px;gap:7px;align-items:center}
+.peopleHead{font-size:11px;font-weight:900;color:#9b887a;padding:6px 0;border-bottom:1px solid var(--line)}
+.person{padding:8px 0;border-bottom:1px solid var(--line)}
+.person:last-child{border-bottom:0}
+.num{font-weight:900;color:#a68e7b;text-align:center}
+.person input,.person select{padding:8px 9px;font-size:14px}
+@media(max-width:680px){
+  .peopleHead{display:none}
+  .person{grid-template-columns:30px 1fr 84px}
+  .person .namecell{grid-column:2/4}
+  .person .rankcell{grid-column:2}
+  .person .delcell{grid-column:3}
+}
+.luckybox{border:1px solid #f0dfcf;border-radius:15px;padding:11px;margin:8px 0;background:#fffdfb}
+.luckytop{display:flex;align-items:center;gap:8px;justify-content:space-between}
+.luckyname{font-weight:900;word-break:break-word}
+.luckytext{font-size:15px;font-weight:850;margin-top:8px;line-height:1.5}
+.medal{font-size:21px}
+.summary{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
+.summary .pill{text-align:center;font-size:13px;padding:9px}
+@media(max-width:520px){.summary{grid-template-columns:1fr}}
+.sticky{position:fixed;left:0;right:0;bottom:0;background:rgba(255,250,244,.92);backdrop-filter:blur(12px);border-top:1px solid #eadfd5;padding:10px 14px calc(10px + env(safe-area-inset-bottom))}
+.sticky .inner{max-width:820px;margin:auto;display:flex;gap:8px}
+.sticky button{flex:1}
+details summary{cursor:pointer;font-weight:900}
+.code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;white-space:pre-wrap}
+.tagrow{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.tag{font-size:11px;border-radius:999px;padding:4px 7px;background:#f5f2ef;color:#77695f}
+.tag.new{background:#efe7ff;color:#7651bd}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+</head>
+<body>
+<div class="wrap">
+  <h1>🐰 ありがとうメッセージメーカー v2.0</h1>
+  <div class="sub">
+    REALITYの「メッセージの送信先」スクショから、<b>名前・Rank・新規</b>だけを読み取ります。<br>
+    名前はできるだけ<b>表示どおりそのまま</b>残します。アイコン・コイン数・ガチャチケは使いません。
+  </div>
+
+  <div class="card">
+    <label>日付</label>
+    <input id="date" type="date">
+  </div>
+
+  <div class="card">
+    <div class="section-title">① スクショを入れる</div>
+    <div class="small">
+      「メッセージの送信先」画面を上から順番が分かるようにスクショしてください。複数枚OK。<br>
+      上から1〜3人を🥇🥈🥉として扱います。
+    </div>
+    <div class="filebox" style="margin-top:10px">
+      <div style="font-size:26px">📸</div>
+      <b>スクショを選択</b>
+      <input id="files" type="file" accept="image/*" multiple>
+      <div id="selectedFiles" class="status">まだ選択されていません。</div>
+    </div>
+    <div class="row" style="margin-top:10px">
+      <button id="analyzeBtn" class="primary">画像を読み取る</button>
+      <button id="addBtn" class="soft">＋ 名前を手動追加</button>
+      <button id="clearBtn" class="ghost">クリア</button>
+    </div>
+    <div class="progress"><div id="bar" class="bar"></div></div>
+    <div id="status" class="status">スクショを選んで「画像を読み取る」を押してください。</div>
+  </div>
+
+  <div class="card">
+    <div class="section-title">② 名前・Rankを確認</div>
+    <div class="small">
+      OCRが間違えたところだけ手直ししてください。名前は勝手に短縮しません。
+    </div>
+    <div class="summary">
+      <div class="pill">🎁 名前 <span id="giftCount">0</span>人</div>
+      <div class="pill">🌷 Rankあり <span id="supportCount">0</span>人</div>
+      <div class="pill new">✨ 新規 <span id="newCount">0</span>人</div>
+    </div>
+    <div class="peopleHead" style="margin-top:10px">
+      <div>#</div><div>名前</div><div>Rank</div><div></div>
+    </div>
+    <div id="people"></div>
+  </div>
+
+  <div class="card">
+    <div class="section-title">③ TOP3 ラッキー○○ 🍀</div>
+    <div class="small">
+      TOP3それぞれに1つだけ付きます。気に入らなければその人だけ引き直せます。
+    </div>
+    <div id="lucky"></div>
+    <div class="row" style="margin-top:8px">
+      <button id="regenLuckyBtn" class="soft">🎲 TOP3全部引き直す</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="section-title">④ 完成メッセージ</div>
+    <textarea id="output"></textarea>
+    <div class="row" style="margin-top:10px">
+      <button id="copyBtn" class="primary">全文コピー</button>
+    </div>
+  </div>
+
+  <details class="card">
+    <summary>🔧 OCR読み取りログ</summary>
+    <div class="small" style="margin:8px 0">読み取りがおかしい時だけ確認してください。</div>
+    <div id="debug" class="code"></div>
+  </details>
+</div>
+
+<div class="sticky">
+  <div class="inner">
+    <button id="bottomCopy" class="primary">📋 完成文をコピー</button>
+  </div>
+</div>
+
+<script>
+const $ = s => document.querySelector(s);
+
+const state = { people: [], lucky: {} };
+
+const LUCKY = {
+  "ラッキーカラー": ["ラベンダー","オレンジ","水色","白","黒","ピンク","ミント","黄色","ネイビー","シルバー"],
+  "ラッキーフード": ["プリン","たまご","おにぎり","アイス","ポテト","カレー","うどん","チョコ","グミ","ヨーグルト","パン","みかん"],
+  "ラッキーアイテム": ["ハンカチ","イヤホン","ボールペン","輪ゴム","靴下","ミラー","充電器","ヘアゴム","マグカップ","小さいポーチ","折りたたみ傘"],
+  "ラッキー行動": ["いつもより5分早く寝る","水を1杯飲む","空を見上げる","好きな曲を1曲聴く","ちょっと伸びをする","机の上を1個だけ片づける","コンビニで直感買いする","深呼吸を3回する","いつもと違う道を歩く"],
+  "ラッキー時間": ["7:07","10:10","12:34","15:15","17:17","20:20","22:22","23:23","0:07"],
+  "ラッキー絵文字": ["🐰","🍀","🌼","💫","🧡","🫧","🍮","⭐️","🎧","🪽","🌙"],
+  "ラッキー場所": ["コンビニ","窓の近く","ベッドの上","駅のホーム","お気に入りの席","鏡の前","冷蔵庫の前","ちょっと静かなところ"],
+  "ラッキーひとこと": ["今日はなんとかなる","ちょっとだけ得する日","無理しない方がうまくいく","直感を信じてよし","小さいラッキーを見逃すな","今日は自分に甘くてよし","思ったよりいい日になる"]
+};
+
+function norm(s){
+  return (s||"").replace(/\u3000/g," ").replace(/\s+/g," ").replace(/[|｜]/g,"").trim();
+}
+function cleanName(s){
+  return norm(s)
+    .replace(/\s*(フォロー中|フォローする|フォロー)\s*$/,"")
+    .replace(/\s*Rank\s*[1-4].*$/i,"")
+    .replace(/\s*\d[\d,]*\s*コイン.*$/,"")
+    .trim();
+}
+function plausibleName(s){
+  s=cleanName(s);
+  if(!s || s.length>48) return false;
+  if(/メッセージ|送信先|ギフトコイン|コイン|フォロー|Rank|全員|選択|Lv\./i.test(s)) return false;
+  if(/^[\d,\s]+$/.test(s)) return false;
+  return true;
+}
+function esc(s){return String(s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
+
+function addPerson(raw, rank=null, isNew=false){
+  raw=cleanName(raw);
+  if(!plausibleName(raw)) return;
+  const hit=state.people.find(p=>p.raw===raw);
+  if(hit){
+    if(rank) hit.rank=rank;
+    if(isNew) hit.isNew=true;
+    return;
+  }
+  state.people.push({raw,rank:rank||null,isNew:!!isNew});
+}
+
+function fmtDate(){
+  const v=$("#date").value;
+  if(!v)return "";
+  const [,m,d]=v.split("-");
+  return `${Number(m)}月${Number(d)}日`;
+}
+function randomLucky(){
+  const cats=Object.keys(LUCKY);
+  const cat=cats[Math.floor(Math.random()*cats.length)];
+  const vals=LUCKY[cat];
+  return {cat,val:vals[Math.floor(Math.random()*vals.length)]};
+}
+function ensureLucky(){
+  const top=state.people.slice(0,3);
+  top.forEach((p,i)=>{
+    if(!state.lucky[i] || state.lucky[i].owner!==p.raw){
+      state.lucky[i]={owner:p.raw,...randomLucky()};
+    }
+  });
+  [0,1,2].forEach(i=>{if(i>=top.length) delete state.lucky[i]});
+}
+function rerollLucky(i){
+  const p=state.people[i];
+  if(!p)return;
+  state.lucky[i]={owner:p.raw,...randomLucky()};
+  renderLucky(); generate();
+}
+
+function renderPeople(){
+  const box=$("#people"); box.innerHTML="";
+  if(!state.people.length){
+    box.innerHTML='<div class="status">読み取り結果がここに表示されます。</div>';
+    updateSummary(); return;
+  }
+  state.people.forEach((p,i)=>{
+    const div=document.createElement("div");
+    div.className="person";
+    div.innerHTML=`
+      <div class="num">${i+1}</div>
+      <div class="namecell">
+        <input class="nameInput" data-i="${i}" value="${esc(p.raw)}" aria-label="名前">
+        <div class="tagrow">
+          ${i<3?`<span class="tag">${["🥇","🥈","🥉"][i]} TOP${i+1}</span>`:""}
+          ${p.isNew?'<span class="tag new">新規</span>':""}
+        </div>
+      </div>
+      <div class="rankcell">
+        <select class="rankSel" data-i="${i}">
+          <option value="">Rankなし</option>
+          ${[1,2,3,4].map(r=>`<option value="${r}" ${p.rank===r?'selected':''}>Rank.${r}</option>`).join("")}
+        </select>
+        <label style="margin-top:5px;font-size:12px">
+          <input class="newChk" data-i="${i}" type="checkbox" ${p.isNew?'checked':''} style="width:auto;margin-right:4px">新規
+        </label>
+      </div>
+      <div class="delcell">
+        <button class="danger delBtn" data-i="${i}" style="padding:8px 9px">削除</button>
+      </div>`;
+    box.appendChild(div);
+  });
+
+  box.querySelectorAll(".nameInput").forEach(el=>el.addEventListener("input",e=>{
+    const i=+e.target.dataset.i;
+    state.people[i].raw=e.target.value;
+    if(i<3) state.lucky={};
+    renderLucky(); generate();
+  }));
+  box.querySelectorAll(".rankSel").forEach(el=>el.addEventListener("change",e=>{
+    const p=state.people[+e.target.dataset.i];
+    p.rank=e.target.value?Number(e.target.value):null;
+    if(!p.rank)p.isNew=false;
+    renderPeople(); renderLucky(); generate();
+  }));
+  box.querySelectorAll(".newChk").forEach(el=>el.addEventListener("change",e=>{
+    const p=state.people[+e.target.dataset.i];
+    p.isNew=e.target.checked;
+    if(p.isNew && !p.rank)p.rank=1;
+    renderPeople(); renderLucky(); generate();
+  }));
+  box.querySelectorAll(".delBtn").forEach(el=>el.addEventListener("click",e=>{
+    state.people.splice(+e.target.dataset.i,1);
+    state.lucky={};
+    renderAll();
+  }));
+  updateSummary();
+}
+
+function renderLucky(){
+  ensureLucky();
+  const box=$("#lucky"); box.innerHTML="";
+  const medals=["🥇","🥈","🥉"];
+  state.people.slice(0,3).forEach((p,i)=>{
+    const l=state.lucky[i];
+    const div=document.createElement("div");
+    div.className="luckybox";
+    div.innerHTML=`
+      <div class="luckytop">
+        <div><span class="medal">${medals[i]}</span> <span class="luckyname">${esc(p.raw)}</span></div>
+        <button class="soft rerollBtn" data-i="${i}">🎲 引き直す</button>
+      </div>
+      <div class="luckytext">🍀 ${esc(l.cat)}：${esc(l.val)}</div>`;
+    box.appendChild(div);
+  });
+  if(!state.people.length) box.innerHTML='<div class="status">TOP3が決まるとここに表示されます。</div>';
+  box.querySelectorAll(".rerollBtn").forEach(b=>b.addEventListener("click",e=>rerollLucky(+e.target.dataset.i)));
+}
+
+function updateSummary(){
+  $("#giftCount").textContent=state.people.length;
+  $("#supportCount").textContent=state.people.filter(p=>p.rank).length;
+  $("#newCount").textContent=state.people.filter(p=>p.rank&&p.isNew).length;
+}
+
+function comma(a){return a.length?a.join("、")+"、":""}
+
+function generate(){
+  ensureLucky();
+  const date=fmtDate();
+  const top=state.people.slice(0,3);
+  const rest=state.people.slice(3).map(p=>p.raw).filter(Boolean);
+  const medals=["🥇","🥈","🥉"];
+  const topText=top.map((p,i)=>{
+    const l=state.lucky[i];
+    return `${medals[i]}${p.raw}\n　🍀${l.cat}：${l.val}`;
+  }).join("\n");
+
+  const rankLines=[];
+  [1,2,3,4].forEach(r=>{
+    const newer=state.people.filter(p=>p.rank===r&&p.isNew).map(p=>p.raw);
+    const normal=state.people.filter(p=>p.rank===r&&!p.isNew).map(p=>p.raw);
+    if(newer.length) rankLines.push(`Rank.${r}（新規）：${comma(newer)}`);
+    if(normal.length) rankLines.push(`Rank.${r}：${comma(normal)}`);
+  });
+
+  $("#output").value=`🐰💬${date}ｷﾞﾌﾄを
+　　　送ってくれたみんなへ
+     ＼＼ ｴｯｻꪔ̤̮ꪔ̤̮🎁ꪔ̤̮ꪔ̤̮ﾎｲｻ ／／
+ …ᕱ_ᕱ🎁ｷﾞﾌﾄ ﾃﾝｷｭﾒﾝ🎁ᕱ⑅ᕱ…
+${topText}
+${rest.length?comma(rest):""}
+
+　　ꪔ̤̥ꪔ̤̮ꪔ̤̫ꪔ̤̱
+🌷( ՞ ܸ. .ܸ՞)＜ｻﾎﾟﾃﾝｷｭ🌷
+${rankLines.join("\n")}
+・────・ʚ🐰ɞ ・────・
+サポーターになってくれたみなさまへ
+https://x.com/syu_ohuzake/status/1895726160828645436?s=46&t=6B_rehNUd64SZTMgR7G77g
+
+1コインでも、私の配信を作り上げる
+ひとつの大切なギフト🎁✨
+ありがとう🌼`;
+}
+
+function renderAll(){renderPeople();renderLucky();generate()}
+
+function groupLines(data){
+  const words=(data.words||[]).filter(w=>w.text && (w.confidence??0)>18).map(w=>({
+    text:norm(w.text),x0:w.bbox.x0,x1:w.bbox.x1,y0:w.bbox.y0,y1:w.bbox.y1,
+    cy:(w.bbox.y0+w.bbox.y1)/2
+  })).filter(w=>w.text);
+  words.sort((a,b)=>a.cy-b.cy||a.x0-b.x0);
+  const lines=[];
+  for(const w of words){
+    let line=lines.find(l=>Math.abs(l.cy-w.cy)<Math.max(16,(w.y1-w.y0)*0.72));
+    if(!line){line={cy:w.cy,items:[]};lines.push(line)}
+    line.items.push(w);
+    line.cy=line.items.reduce((s,x)=>s+x.cy,0)/line.items.length;
+  }
+  return lines.map(l=>{
+    l.items.sort((a,b)=>a.x0-b.x0);
+    return {cy:l.cy,text:norm(l.items.map(x=>x.text).join(" "))};
+  }).sort((a,b)=>a.cy-b.cy);
+}
+
+function parseRowsFromLines(lines){
+  const rows=[];
+
+  // Main pass: locate coin line, use previous text line as name.
+  for(let i=0;i<lines.length;i++){
+    const t=lines[i].text;
+    if(!/コイン/i.test(t)) continue;  // number itself is ignored
+    let name=null;
+    for(let k=i-1;k>=Math.max(0,i-3);k--){
+      const cand=cleanName(lines[k].text);
+      if(plausibleName(cand)){name=cand;break}
+    }
+    if(!name) continue;
+
+    let rank=null,isNew=false;
+    for(let k=i+1;k<=Math.min(lines.length-1,i+3);k++){
+      const s=lines[k].text;
+      const m=s.match(/Rank\s*([1-4])/i);
+      if(m){
+        rank=Number(m[1]);
+        isNew=/新規/.test(s);
+        break;
+      }
+    }
+    rows.push({name,rank,isNew,anchorY:lines[i].cy});
+  }
+
+  // Fallback: Rank line with previous plausible name.
+  for(let i=0;i<lines.length;i++){
+    const m=lines[i].text.match(/Rank\s*([1-4])/i);
+    if(!m) continue;
+    let name=null;
+    for(let k=i-1;k>=Math.max(0,i-4);k--){
+      const cand=cleanName(lines[k].text);
+      if(plausibleName(cand)){name=cand;break}
+    }
+    if(name && !rows.some(r=>r.name===name)){
+      rows.push({name,rank:Number(m[1]),isNew:/新規/.test(lines[i].text),anchorY:lines[i].cy});
+    }
+  }
+
+  rows.sort((a,b)=>a.anchorY-b.anchorY);
+
+  // De-dupe exact repeats from overlapping screenshots.
+  return rows.filter((r,i,a)=>i===0 || !(r.name===a[i-1].name && Math.abs(r.anchorY-a[i-1].anchorY)<30));
+}
+
+async function analyze(){
+  const files=[...$("#files").files];
+  if(!files.length){$("#status").textContent="スクショを選んでください。";return}
+  state.people=[];state.lucky={};
+  $("#debug").textContent="";
+  $("#bar").style.width="0%";
+  $("#analyzeBtn").disabled=true;
+
+  try{
+    for(let i=0;i<files.length;i++){
+      $("#status").textContent=`${i+1}/${files.length}枚目をOCR中…`;
+      const url=URL.createObjectURL(files[i]);
+      const img=new Image();
+      await new Promise((res,rej)=>{img.onload=res;img.onerror=rej;img.src=url});
+      const c=document.createElement("canvas");
+      c.width=img.naturalWidth;c.height=img.naturalHeight;
+      c.getContext("2d").drawImage(img,0,0);
+
+      const result=await Tesseract.recognize(c,"jpn+eng",{
+        logger:m=>{
+          if(m.status==="recognizing text"){
+            const overall=(i+(m.progress||0))/files.length;
+            $("#bar").style.width=`${Math.round(overall*100)}%`;
+          }
+        }
+      });
+
+      const lines=groupLines(result.data);
+      const rows=parseRowsFromLines(lines);
+      rows.forEach(r=>addPerson(r.name,r.rank,r.isNew));
+
+      $("#debug").textContent += `\n--- ${files[i].name} ---\n` + lines.map(x=>x.text).join("\n") + "\n";
+      URL.revokeObjectURL(url);
+      renderAll();
+    }
+    $("#bar").style.width="100%";
+    $("#status").textContent=`完了！ ${state.people.length}人を抽出しました。名前がおかしい人だけ直してください。`;
+  }catch(e){
+    console.error(e);
+    $("#status").textContent="読み取りに失敗しました。\n"+e.message;
+  }finally{
+    $("#analyzeBtn").disabled=false;
+  }
+}
+
+function copyOut(){
+  const text=$("#output").value;
+  navigator.clipboard.writeText(text).then(()=>{
+    $("#copyBtn").textContent="✅ コピーした！";
+    $("#bottomCopy").textContent="✅ コピーした！";
+    setTimeout(()=>{
+      $("#copyBtn").textContent="全文コピー";
+      $("#bottomCopy").textContent="📋 完成文をコピー";
+    },1000);
+  }).catch(()=>{
+    $("#output").select();
+    document.execCommand("copy");
+  });
+}
+
+$("#files").addEventListener("change",e=>{
+  const fs=[...e.target.files];
+  $("#selectedFiles").textContent=fs.length?`選択済み：${fs.length}枚\n`+fs.map(f=>"・"+f.name).join("\n"):"まだ選択されていません。";
+});
+$("#analyzeBtn").addEventListener("click",analyze);
+$("#addBtn").addEventListener("click",()=>{
+  const raw=prompt("名前を入力");
+  if(raw){addPerson(raw);renderAll()}
+});
+$("#clearBtn").addEventListener("click",()=>{
+  state.people=[];state.lucky={};$("#files").value="";$("#bar").style.width="0%";
+  $("#status").textContent="クリアしました。";$("#debug").textContent="";renderAll();
+});
+$("#regenLuckyBtn").addEventListener("click",()=>{state.lucky={};renderLucky();generate()});
+$("#copyBtn").addEventListener("click",copyOut);
+$("#bottomCopy").addEventListener("click",copyOut);
+$("#date").addEventListener("change",generate);
+
+(function init(){
+  const now=new Date();
+  const local=new Date(now.getTime()-now.getTimezoneOffset()*60000).toISOString().slice(0,10);
+  $("#date").value=local;
+  renderAll();
+})();
+</script>
+</body>
+</html>
