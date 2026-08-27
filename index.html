@@ -277,7 +277,7 @@
             <input id="dropInput" />
           </div>
           <div class="section">
-            <div class="label">締め</div>
+            <div class="label">締め（固定）</div>
             <textarea id="endingInput" rows="3"></textarea>
           </div>
           <div class="btnrow">
@@ -409,7 +409,7 @@ const DROPS = [
 ];
 
 const ENDINGS = [
-  "以上っ！今日のHP＋1お届け完了〜🐰✨"
+  "今日のHP＋1お届け完了〜🐰✨"
 ];
 
 const OPENERS = [
@@ -759,7 +759,7 @@ function randomizeDesign(){
   document.getElementById("statusInput").value=set.join("　");
   document.getElementById("thanksInput").value=pick(THANKS_LINES);
   document.getElementById("dropInput").value=pick(DROPS);
-  document.getElementById("endingInput").value=pick(ENDINGS);
+  document.getElementById("endingInput").value="今日のHP＋1お届け完了〜🐰✨";
 }
 
 function buildFull(){
@@ -794,7 +794,7 @@ function buildFull(){
   const thanksDisplay=wrapThanksLine(thanks);
   const drop=document.getElementById("dropInput").value.trim();
   const daily=document.getElementById("dailyMessage").value.trim();
-  const ending=document.getElementById("endingInput").value.trim();
+  const ending=document.getElementById("endingInput").value.trim() || "今日のHP＋1お届け完了〜🐰✨";
   const x=document.getElementById("xUrl").value.trim();
   const tt=document.getElementById("tiktokUrl").value.trim();
   const yt=document.getElementById("youtubeUrl").value.trim();
@@ -878,7 +878,7 @@ function loadDraft(){
     statusInput.value=d.status||"";
     thanksInput.value=d.thanks||"";
     dropInput.value=d.drop||"";
-    endingInput.value=d.ending||"";
+    endingInput.value="今日のHP＋1お届け完了〜🐰✨";
     dailyMessage.value=d.daily||"";
     xUrl.value=d.x||xUrl.value;
     tiktokUrl.value=d.tiktok||tiktokUrl.value;
